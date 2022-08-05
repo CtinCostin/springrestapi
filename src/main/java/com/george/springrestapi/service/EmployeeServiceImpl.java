@@ -3,6 +3,10 @@ package com.george.springrestapi.service;
 import com.george.springrestapi.model.Employee;
 import com.george.springrestapi.repository.EmployeeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,8 +39,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 //    }
 
     @Override
-    public List<Employee> getEmployees() {
-        return employeeRepo.findAll();
+    public List<Employee> getEmployees(int pageNumber, int pageSize) {
+        Pageable pages = PageRequest.of(pageNumber, pageSize);
+        return employeeRepo.findAll(pages).getContent();
     }
 
     @Override
@@ -61,5 +66,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee updateEmployee(Employee employee) {
         return employeeRepo.save(employee);
+    }
+
+    @Override
+    public List<Employee> getEmployeesByName(String name) {
+        return employeeRepo.findByName(name);
+    }
+
+    @Override
+    public List<Employee> getEmployeesByNameAndLocation(String name, String location) {
+        return employeeRepo.findByNameAndLocation(name, location);
+    }
+
+    @Override
+    public List<Employee> getEmployeesByNameContaining(String keyword) {
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
+        return employeeRepo.findByNameContaining(keyword, sort);
     }
 }
