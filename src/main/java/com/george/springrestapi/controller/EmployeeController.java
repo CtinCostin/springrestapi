@@ -1,12 +1,17 @@
 package com.george.springrestapi.controller;
 
+import com.george.springrestapi.model.Department;
 import com.george.springrestapi.model.Employee;
+import com.george.springrestapi.repository.DepartmentRepo;
+import com.george.springrestapi.repository.EmployeeRepo;
+import com.george.springrestapi.request.EmployeeRequest;
 import com.george.springrestapi.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,11 +22,18 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private EmployeeRepo employeeRepo;
+
+    @Autowired
+    private DepartmentRepo departmentRepo;
+
     @Value("${app.name:Employee Management}")
     private String appName;
 
     @Value("${app.version:version 1}")
     private String appVersion;
+
 
     @GetMapping("/version")
     public String getAppDetails() {
@@ -40,8 +52,17 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public ResponseEntity<Employee> saveEmployee(@Valid @RequestBody Employee employee) {
-        return new ResponseEntity<Employee>(employeeService.saveEmployee(employee), HttpStatus.CREATED);
+    public ResponseEntity<Employee> saveEmployee(@Valid @RequestBody EmployeeRequest eRequest) {
+        Department dept = new Department();
+        dept.setName(eRequest.getDepartment());
+
+        dept = departmentRepo.save(dept);
+
+        Employee employee = new Employee(eRequest);
+        employee.setDepartment(dept);
+
+        employee = employeeRepo.save(employee);
+        return new ResponseEntity<Employee>(employee, HttpStatus.CREATED);
     }
 
     @PutMapping("/employees/{id}")
@@ -53,7 +74,7 @@ public class EmployeeController {
     @DeleteMapping("/employees")
     public ResponseEntity<HttpStatus> deleteEmployee(@RequestParam Long id) {
         employeeService.deleteEmployee(id);
-        return new ResponseEntity<HttpStatus>( HttpStatus.NO_CONTENT);
+        return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/employees/filterByName")
@@ -69,6 +90,22 @@ public class EmployeeController {
     @GetMapping("/employees/filterByKeyword")
     public ResponseEntity<List<Employee>> getEmployeesByKeyword(@RequestParam String name) {
         return new ResponseEntity<List<Employee>>(employeeService.getEmployeesByNameContaining(name), HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/{name}/{location}")
+    public ResponseEntity<List<Employee>> getEmployeesByNameOrLocation(@PathVariable String name, @PathVariable String location) {
+        return new ResponseEntity<List<Employee>>(employeeService.getEmployeesByNameOrLocation(name, location), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/employees/delete/{name}")
+    public ResponseEntity<String> deleteEmployeeByName(@PathVariable String name) {
+        return new ResponseEntity<String>(employeeService.deleteEmployeeByName(name) + " No. of records deleted", HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/filter/{name}")
+    public ResponseEntity<List<Employee>> getEmployeesByDepartment(@PathVariable String name) {
+        //return new ResponseEntity<List<Employee>>(employeeRepo.findByDepartmentName(name), HttpStatus.OK);
+        return new ResponseEntity<List<Employee>>(employeeRepo.getEmployeesByDepartmentName(name), HttpStatus.OK);
     }
 
 

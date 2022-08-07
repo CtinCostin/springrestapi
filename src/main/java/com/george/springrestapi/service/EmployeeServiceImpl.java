@@ -40,7 +40,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<Employee> getEmployees(int pageNumber, int pageSize) {
-        Pageable pages = PageRequest.of(pageNumber, pageSize);
+        Pageable pages = PageRequest.of(pageNumber, pageSize, Sort.Direction.DESC, "id");
         return employeeRepo.findAll(pages).getContent();
     }
 
@@ -82,5 +82,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<Employee> getEmployeesByNameContaining(String keyword) {
         Sort sort = Sort.by(Sort.Direction.ASC, "id");
         return employeeRepo.findByNameContaining(keyword, sort);
+    }
+
+    @Override
+    public List<Employee> getEmployeesByNameOrLocation(String name, String location) {
+        return employeeRepo.getEmployeesByNameAndLocation(name, location);
+    }
+
+    @Override
+    public Integer deleteEmployeeByName(String name) {
+        return employeeRepo.deleteEmployeeByName(name);
     }
 }

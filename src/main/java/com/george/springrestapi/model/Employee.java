@@ -1,6 +1,8 @@
 package com.george.springrestapi.model;
 
+import com.george.springrestapi.request.EmployeeRequest;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,6 +19,7 @@ import java.util.Date;
 @Setter
 @ToString
 @Entity
+@NoArgsConstructor
 @Table(name = "employee")
 public class Employee {
 
@@ -31,11 +34,7 @@ public class Employee {
 
     private String location;
 
-    @NotBlank(message = "Please enter a valid email address!")
     private String email;
-
-    @NotBlank(message = "Department should not be null!")
-    private String department;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -44,4 +43,12 @@ public class Employee {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Date updatedAt;
+
+    @JoinColumn(name = "department_id")
+    @OneToOne
+    private Department department;
+
+    public Employee(EmployeeRequest request) {
+        this.name = request.getName();
+    }
 }
