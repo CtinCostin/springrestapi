@@ -1,10 +1,12 @@
 package com.george.springrestapi.controller;
 
+import com.george.springrestapi.dao.EmployeeDaoImplementation;
 import com.george.springrestapi.model.Department;
 import com.george.springrestapi.model.Employee;
 import com.george.springrestapi.repository.DepartmentRepo;
 import com.george.springrestapi.repository.EmployeeRepo;
 import com.george.springrestapi.request.EmployeeRequest;
+import com.george.springrestapi.response.EmployeeResponse;
 import com.george.springrestapi.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,6 +31,9 @@ public class EmployeeController {
     @Autowired
     private DepartmentRepo departmentRepo;
 
+    @Autowired
+    private EmployeeDaoImplementation daoImplementation;
+
     @Value("${app.name:Employee Management}")
     private String appName;
 
@@ -41,10 +47,29 @@ public class EmployeeController {
     }
 
 
-    @GetMapping("/employees")
-    public ResponseEntity<List<Employee>> getEmployees(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
-        return new ResponseEntity<List<Employee>>(employeeService.getEmployees(pageNumber, pageSize), HttpStatus.OK);
-    }
+//    @GetMapping("/employees")
+//    public ResponseEntity<List<Employee>> getEmployees(@RequestParam Integer pageNumber, @RequestParam Integer pageSize) {
+//        return new ResponseEntity<List<Employee>>(employeeService.getEmployees(pageNumber, pageSize), HttpStatus.OK);
+//    }
+
+//    @GetMapping("/employees")
+//    public ResponseEntity<List<EmployeeResponse>> getEmployees() {
+//        List<Employee> list = (List<Employee>) employeeRepo.findAll();
+//        List<EmployeeResponse> responseList = new ArrayList<>();
+//        list.forEach(e -> {
+//            EmployeeResponse employeeResponse = new EmployeeResponse();
+//            employeeResponse.setId(e.getId());
+//            employeeResponse.setEmployeeName(e.getName());
+//            List<String> depts = new ArrayList<>();
+//            for (Department d : e.getDepartmentList()) {
+//                depts.add(d.getName());
+//            }
+//            employeeResponse.setDepartment(depts);
+//            responseList.add(employeeResponse);
+//        });
+//        return new ResponseEntity<List<EmployeeResponse>>(responseList, HttpStatus.OK);
+//
+//    }
 
     @GetMapping("/employees/{id}")
     public ResponseEntity<Employee> getEmployee(@PathVariable Long id) {
@@ -52,17 +77,31 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public ResponseEntity<Employee> saveEmployee(@Valid @RequestBody EmployeeRequest eRequest) {
-        Department dept = new Department();
-        dept.setName(eRequest.getDepartment());
+    public ResponseEntity<String> saveEmployee(@Valid @RequestBody EmployeeRequest eRequest) {
+        //case with department is the child of employee//
+//        Department dept = new Department();
+//        dept.setName(eRequest.getDepartment());
+//
+//        dept = departmentRepo.save(dept);
+//
+//        Employee employee = new Employee(eRequest);
+//        employee.setDepartment(dept);
+//
+//        employee = employeeRepo.save(employee);
+//        return new ResponseEntity<Employee>(employeeRepo.save(employee), HttpStatus.CREATED);
 
-        dept = departmentRepo.save(dept);
-
+        //case with employee is the child of department//
         Employee employee = new Employee(eRequest);
-        employee.setDepartment(dept);
-
         employee = employeeRepo.save(employee);
-        return new ResponseEntity<Employee>(employee, HttpStatus.CREATED);
+
+        for (String s : eRequest.getDepartment()) {
+            Department d = new Department();
+            d.setName(s);
+            d.setEmployee(employee);
+
+            departmentRepo.save(d);
+        }
+        return new ResponseEntity<String>("Record saved successfully", HttpStatus.CREATED);
     }
 
     @PutMapping("/employees/{id}")
@@ -97,16 +136,17 @@ public class EmployeeController {
         return new ResponseEntity<List<Employee>>(employeeService.getEmployeesByNameOrLocation(name, location), HttpStatus.OK);
     }
 
-    @DeleteMapping("/employees/delete/{name}")
-    public ResponseEntity<String> deleteEmployeeByName(@PathVariable String name) {
-        return new ResponseEntity<String>(employeeService.deleteEmployeeByName(name) + " No. of records deleted", HttpStatus.OK);
+
+//    @GetMapping("/employees/filter/{name}")
+//    public ResponseEntity<List<Employee>> getEmployeesByDepartment(@PathVariable String name) {
+//        //return new ResponseEntity<List<Employee>>(employeeRepo.findByDepartmentName(name), HttpStatus.OK);
+//        return new ResponseEntity<List<Employee>>(employeeRepo.getEmployeesByDepartmentName(name), HttpStatus.OK);
+//    }
+
+    @GetMapping("/employees")
+    public List<Employee> getEmployees() {
+        // return employeeRepo.getEmployees();
+        // return daoImplementation.getAllEmployees();
+        return employeeRepo.getAllRecords();
     }
-
-    @GetMapping("/employees/filter/{name}")
-    public ResponseEntity<List<Employee>> getEmployeesByDepartment(@PathVariable String name) {
-        //return new ResponseEntity<List<Employee>>(employeeRepo.findByDepartmentName(name), HttpStatus.OK);
-        return new ResponseEntity<List<Employee>>(employeeRepo.getEmployeesByDepartmentName(name), HttpStatus.OK);
-    }
-
-
 }

@@ -1,8 +1,6 @@
 package com.george.springrestapi.model;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -18,4 +16,11 @@ public class Department {
     private Long id;
 
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+
+//    @OneToOne(mappedBy = "department")
+//    private Employee employee;
 }

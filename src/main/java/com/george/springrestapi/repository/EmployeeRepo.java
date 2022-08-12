@@ -29,8 +29,13 @@ public interface EmployeeRepo extends PagingAndSortingRepository<Employee, Long>
     @Query("DELETE FROM Employee WHERE name = :name")
     Integer deleteEmployeeByName(String name);
 
-    List<Employee> findByDepartmentName(String name);
+ //   List<Employee> findByDepartmentName(String name);
 
-    @Query("FROM Employee WHERE department.name = :name")
-    List<Employee> getEmployeesByDepartmentName(String name);
+//    @Query("FROM Employee WHERE department.name = :name")
+//    List<Employee> getEmployeesByDepartmentName(String name);
+
+    @Query(value = "select * from employee", nativeQuery = true)
+    List<Employee> getEmployees();
+
+    List<Employee> getAllRecords();
 }

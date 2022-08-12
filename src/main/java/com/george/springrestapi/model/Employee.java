@@ -14,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,6 +22,8 @@ import java.util.Date;
 @Entity
 @NoArgsConstructor
 @Table(name = "employee")
+//@NamedNativeQuery(name = "getAllRecords", query = "select * from employee", resultClass = Employee.class)
+@NamedQuery(name = "Employee.getAllRecords", query = "FROM Employee")
 public class Employee {
 
     @Id
@@ -44,11 +47,16 @@ public class Employee {
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    @JoinColumn(name = "department_id")
-    @OneToOne
-    private Department department;
+//    @JoinColumn(name = "department_id")
+//    @OneToOne()
+//    private Department department;
+
+    @OneToMany(mappedBy = "employee")
+    private List<Department> departmentList;
 
     public Employee(EmployeeRequest request) {
         this.name = request.getName();
     }
+
+
 }
